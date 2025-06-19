@@ -1,7 +1,8 @@
 process IMPUTE5_CHUNK {
     tag "$meta.id"
     label 'process_medium'
-    container "lindonkambule/impute5:v1.2.0"
+
+    container "coker.io/lindonkambule/impute5:v1.2.0"
 
     input:
     tuple val(meta),

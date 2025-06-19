@@ -48,6 +48,20 @@
         },
         "timestamp": "2025-05-26T16:00:10.6349136"
     },
+    "impute_stub": {
+        "content": [
+            "test_stub_imputed.bcf",
+            "test_stub_imputed.log",
+            [
+                "versions.yml:md5,8aec471e1e1e916c364f69824b10fdce"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.2"
+        },
+        "timestamp": "2025-06-13T11:33:09.772082292"
+    },
     "test-impute5-impute-file": {
         "content": [
             "test_imputed.bcf",

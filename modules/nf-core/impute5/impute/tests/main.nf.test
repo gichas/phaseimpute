@@ -3,29 +3,48 @@ nextflow_process {
     script "../main.nf"
     process "IMPUTE5_IMPUTE"
 
+    tag "impute5/impute"
     tag "modules"
     tag "modules_nfcore"
-    tag "impute5"
-    tag "impute5/impute"
 
-    test("test-impute5-impute-file") {
+    test("Should run without error") {
+        setup {
+            run("IMPUTE5_CONVERTREF") {
+                script "../../convertref/main.nf"
+                process {
+                """
+                input[0] = Channel.of([
+                    [ id:'ref_data' ],
+                    file(params.modules_testdata_base_path + "delete_me/glimpse/1000GP.chr21.noNA12878.s.bcf", checkIfExists: true),
+                    file(params.modules_testdata_base_path + "delete_me/glimpse/1000GP.chr21.noNA12878.s.bcf.csi", checkIfExists: true),
+                    "chr21:16600000-16800000"
+                ])
+                """
+                }
+            }
+        }
+
         when {
             process {
                 """
-                input[0] = [
-                    [ id: 'test' ],
-                    file(params.modules_testdata_base_path + 'testdata/target.bcf', checkIfExists: true),
-                    file(params.modules_testdata_base_path + 'testdata/target.bcf.csi', checkIfExists: true),
-                    file(params.modules_testdata_base_path + 'testdata/reference_xcf.bcf', checkIfExists: true),
-                    file(params.modules_testdata_base_path + 'testdata/reference_xcf.bcf.csi', checkIfExists: true),
-                    file(params.modules_testdata_base_path + 'testdata/reference_xcf.bin', checkIfExists: true),
-                    file(params.modules_testdata_base_path + 'testdata/reference_xcf.fam', checkIfExists: true),
-                    file(params.modules_testdata_base_path + 'testdata/chr20.b37.gmap.gz', checkIfExists: true),
-                    '20:2000000-7000000'
-                ]
+                input[0] = IMPUTE5_CONVERTREF.out.xcf_file
+                    .map { meta, xcf_bcf, xcf_csi, xcf_bin, xcf_fam ->
+                        [
+                            [ id:'test_impute' ],
+                            file(params.modules_testdata_base_path + "delete_me/glimpse/NA12878.chr21.s.1x.vcf.gz", checkIfExists: true),
+                            file(params.modules_testdata_base_path + "delete_me/glimpse/NA12878.chr21.s.1x.vcf.gz.csi", checkIfExists: true),
+                            xcf_bcf,
+                            xcf_csi,
+                            xcf_bin,
+                            xcf_fam,
+                            file(params.modules_testdata_base_path + "delete_me/glimpse/chr21.b38.gmap.gz", checkIfExists: true),
+                            "chr21:16600000-16700000"  // Région plus petite pour la stabilité
+                        ]
+                    }
                 """
             }
         }
+
         then {
             assertAll(
                 { assert process.success },
@@ -33,33 +52,90 @@ nextflow_process {
                     file(process.out.bcf[0][1]).name,
                     file(process.out.log[0][1]).name,
                     process.out.versions
-                ).match() }
+                ).match("impute_basic") }
             )
         }
     }
 
-   // pourquoi pas rajouter vcf output ou vcf input en test, demander à Louis
+    test("impute5-impute-without-region") {
+        setup {
+            run("IMPUTE5_CONVERTREF") {
+                script "../../convertref/main.nf"
+                process {
+                """
+                input[0] = Channel.of([
+                    [ id:'ref_no_region' ],
+                    file(params.modules_testdata_base_path + "delete_me/glimpse/1000GP.chr21.noNA12878.s.bcf", checkIfExists: true),
+                    file(params.modules_testdata_base_path + "delete_me/glimpse/1000GP.chr21.noNA12878.s.bcf.csi", checkIfExists: true),
+                    "chr21"
+                ])
+                """
+                }
+            }
+        }
 
-    test("test-impute5-impute-file-stub") {
-        options '-stub'
         when {
             process {
                 """
-                input[0] = [
-                    [ id: 'test' ],
-                    [],[], // target files (empty for stub)
-                    [],[], // reference files (empty for stub)  
-                    [],[], // reference bin/fam (empty for stub)
-                    [],    // genetic map (empty for stub)
-                    ''     // region (empty string instead of empty array)
-                ]
+                input[0] = IMPUTE5_CONVERTREF.out.xcf_file
+                    .map { meta, xcf_bcf, xcf_csi, xcf_bin, xcf_fam ->
+                        [
+                            [ id:'test_no_region' ],
+                            file(params.modules_testdata_base_path + "delete_me/glimpse/NA12878.chr21.s.1x.vcf.gz", checkIfExists: true),
+                            file(params.modules_testdata_base_path + "delete_me/glimpse/NA12878.chr21.s.1x.vcf.gz.csi", checkIfExists: true),
+                            xcf_bcf,
+                            xcf_csi,
+                            xcf_bin,
+                            xcf_fam,
+                            file(params.modules_testdata_base_path + "delete_me/glimpse/chr21.b38.gmap.gz", checkIfExists: true),
+                            ""  // Pas de région spécifique
+                        ]
+                    }
                 """
             }
         }
+
         then {
             assertAll(
                 { assert process.success },
-                { assert snapshot(process.out).match() }
+                { assert snapshot(
+                    file(process.out.bcf[0][1]).name,
+                    file(process.out.log[0][1]).name,
+                    process.out.versions
+                ).match("impute_no_region") }
+            )
+        }
+    }
+
+    test("impute5-impute-stub") {
+        options '-stub'
+
+        when {
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'test_stub' ],
+                    file('stub_target.bcf'),
+                    file('stub_target.bcf.csi'),
+                    file('stub_ref.xcf'),
+                    file('stub_ref.xcf.csi'),
+                    file('stub_ref.bin'),
+                    file('stub_ref.fam'),
+                    file('stub_genetic_map.gmap.gz'),
+                    'chr21:16600000-16700000'
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(
+                    file(process.out.bcf[0][1]).name,
+                    file(process.out.log[0][1]).name,
+                    process.out.versions
+                ).match("impute_stub") }
             )
         }
     }
