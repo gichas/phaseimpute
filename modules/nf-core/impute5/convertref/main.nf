@@ -2,7 +2,7 @@ process IMPUTE5_CONVERTREF {
     tag "$meta.id"
     label 'process_medium'
 
-    container "docker.io/lindonkambule/impute5"
+    container "docker.io/lindonkambule/impute5:v1.2.0"
 
     input:
     tuple val(meta),
@@ -28,6 +28,7 @@ process IMPUTE5_CONVERTREF {
     def chrom = region.split(':')[0] 
 
     """
+
     xcftools_static view \\
         --i ${ref_bcf} \\
         --o ${prefix}_xcf.bcf \\

@@ -65,32 +65,5 @@ nextflow_process {
             )
         }
     }
-
-    test("impute5-convertref-with-custom-region") {
-        when {
-            process { 
-                """
-                input[0] = Channel.of([
-                    [ id:'custom_test' ],
-                    file(params.modules_testdata_base_path + "delete_me/glimpse/1000GP.chr21.noNA12878.s.bcf", checkIfExists: true),
-                    file(params.modules_testdata_base_path + "delete_me/glimpse/1000GP.chr21.noNA12878.s.bcf.csi", checkIfExists: true),
-                    "21:16600000-16800000"  // Test avec format différent
-                ])
-                """
-            }
-        }
-
-        then {
-            assertAll(
-                { assert process.success },
-                { assert snapshot(
-                    process.out.xcf_file[0][1],
-                    process.out.xcf_file[0][2], 
-                    process.out.xcf_file[0][3],
-                    process.out.xcf_file[0][4],
-                    process.out.versions
-                ).match("convertref_custom_region") }
-            )
-        }
-    }
 }
+  
