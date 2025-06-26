@@ -1,0 +1,89 @@
+nextflow_process {
+    name "Test Process IMPUTE5_CHUNK"
+    script "../main.nf"
+    process "IMPUTE5_CHUNK"
+
+    tag "impute5/chunk"
+    tag "modules"
+    tag "modules_nfcore"
+
+    test("Should run without error") {
+        setup {
+            run("IMPUTE5_CONVERTREF") {
+                script "../../convertref/main.nf"
+                process {
+                """
+                input[0] = Channel.of([
+                    [ id:'ref_data' ], // meta map
+                    file(params.modules_testdata_base_path + "delete_me/glimpse/1000GP.chr21.noNA12878.s.bcf", checkIfExists: true),
+                    file(params.modules_testdata_base_path + "delete_me/glimpse/1000GP.chr21.noNA12878.s.bcf.csi", checkIfExists: true),
+                    "chr21:16600000-16800000"
+                ])
+                """
+                }
+            }
+        }
+
+        when {
+            process {
+                """
+                input[0] = IMPUTE5_CONVERTREF.out.xcf_file
+                    .map { meta, xcf_bcf, xcf_csi, xcf_bin, xcf_fam ->
+                        [
+                            [ id:'test' ],
+                            xcf_bcf,
+                            xcf_csi,
+                            xcf_bin,
+                            xcf_fam,
+                            file(params.modules_testdata_base_path + "delete_me/glimpse/NA12878.chr21.s.1x.vcf.gz", checkIfExists: true),
+                            file(params.modules_testdata_base_path + "delete_me/glimpse/NA12878.chr21.s.1x.vcf.gz.csi", checkIfExists: true),
+                            "chr21:16600000-16800000"
+                        ]
+                    }
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(
+                    process.out.chunks[0][1],    // fichier chunks
+                    process.out.versions
+                ).match("chunk_basic") }
+            )
+        }
+    }
+
+    test("impute5-chunk-stub") {
+        options '-stub'
+
+        when {
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file('stub_ref.xcf'),
+                    file('stub_ref.xcf.csi'),
+                    file('stub_ref.bin'),
+                    file('stub_ref.fam'),
+                    file('stub_target.bcf'),
+                    file('stub_target.bcf.csi'),
+                    'chr21'
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(
+                    process.out.chunks[0][1],
+                    process.out.versions
+                ).match("chunk_stub") }
+            )
+        }
+    }
+
+}

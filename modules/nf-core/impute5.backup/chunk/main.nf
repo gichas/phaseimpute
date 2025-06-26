@@ -2,12 +2,14 @@ process IMPUTE5_CHUNK {
     tag "$meta.id"
     label 'process_medium'
 
-    container "docker.io/lindonkambule/impute5:v1.2.0"
+    container "coker.io/lindonkambule/impute5:v1.2.0"
 
     input:
     tuple val(meta),
           path(ref_xcf),
           path(ref_index),
+          path(ref_bin),
+          path(ref_fam),
           path(target_bcf),
           path(target_index),
           val(region)
@@ -20,6 +22,10 @@ process IMPUTE5_CHUNK {
     tuple val(meta),
           path(ref_index),   emit: ref_index
     tuple val(meta),
+          path(ref_bin),     emit: ref_bin
+    tuple val(meta),
+          path(ref_fam),     emit: ref_fam
+    tuple val(meta),
           path(target_bcf),  emit: target
     tuple val(meta),
           path(target_index),emit: tbi
@@ -27,7 +33,7 @@ process IMPUTE5_CHUNK {
 
     script:
     def args   = task.ext.args   ?: ''
-    def chrom = region.contains(':') ? region.split(':')[0] : region
+    def chrom  = region.split(':')[0] 
     """
     imp5Chunker_v1.2.0_static \\
       --h ${ref_xcf} \\
@@ -47,14 +53,16 @@ process IMPUTE5_CHUNK {
     """
     # create empty outputs
     touch chunks_${chrom}.txt
-    touch stub_ref_xcf.bcf
-    touch stub_ref_xcf.bcf.csi
+    touch stub_ref.xcf
+    touch stub_ref.xcf.csi
+    touch stub_ref.bin
+    touch stub_ref.fam
     touch stub_target.bcf
     touch stub_target.bcf.csi
     
     cat <<-END_VERSIONS > versions.yml
     \"${task.process}\":
-      imp5Chunker: \"stub\"
+      impute5_chunker: \"stub\"
     END_VERSIONS
     """
 }

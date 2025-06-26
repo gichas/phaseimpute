@@ -2,7 +2,7 @@ process IMPUTE5_IMPUTE {
     tag "$meta.id"
     label 'process_high'
 
-    container "docker.io/lindonkambule/impute5:v1.2.0"
+    container "lindonkambule/impute5:v1.2.0"
 
     input:
     tuple val(meta),

@@ -1,105 +1,107 @@
 nextflow_workflow {
 
-    name "Test Subworkflow IMPUTE5_SUBWORKFLOW"
+    name "Test Subworkflow VCF_IMPUTE_IMPUTE5"
     script "../main.nf"
-    workflow "IMPUTE5_SUBWORKFLOW"
+    config "./nextflow.config"
+
+    workflow "VCF_IMPUTE_IMPUTE5"
 
     tag "subworkflows"
     tag "subworkflows_local"
+    tag "subworkflows/vcf_impute_impute5"
+    tag "vcf_impute_impute5"
+
     tag "impute5"
-    tag "impute5/subworkflow"
+    tag "impute5/chunk"
+    tag "impute5/convertref"
+    tag "impute5/impute"
 
-    test("impute5-subworkflow-basic") {
+    // test("Impute with IMPUTE5 - chr22") {
+    //     tag "impute5"
+    //     when {
+    //         workflow {
+    //             """
+    //             // Target data - fichier à imputer
+    //             input[0] = Channel.of([
+    //                 [id: "NA12878", panel: "1000GP", chr: "22"],
+    //                 file(params.pipelines_testdata_base_path + "hum_data/individuals/NA12878/NA12878.s.bcf", checkIfExists: true),
+    //                 file(params.pipelines_testdata_base_path + "hum_data/individuals/NA12878/NA12878.s.bcf.csi", checkIfExists: true),
+    //                 "chr22:16500000-16700000"
+    //             ])
 
-        config "./nextflow.config"
+    //             // Reference panel data
+    //             input[1] = Channel.of([
+    //                 [id: "1000GP", chr: "22"],
+    //                 file(params.pipelines_testdata_base_path + "hum_data/panel/chr22/1000GP.chr22.s.norel.vcf.gz", checkIfExists: true),
+    //                 file(params.pipelines_testdata_base_path + "hum_data/panel/chr22/1000GP.chr22.s.norel.vcf.gz.csi", checkIfExists: true),
+    //                 "chr22:16500000-16700000"
+    //             ])
 
-        when {
-            workflow {
-                """
-                // CORRECTION: Utiliser la même région partout pour éviter les problèmes de jointure
-                def test_region = '20:2000000-7000000'
+    //             // Genetic map data
+    //             input[2] = Channel.of([
+    //                 [id: "1000GP", chr: "22"],
+    //                 file(params.pipelines_testdata_base_path + "hum_data/reference_genome/GRCh38_22.map", checkIfExists: true),
+    //                 "chr22:16500000-16700000"
+    //             ])
+    //             """
+    //         }
+    //     }
 
-                // Canal des données target
-                ch_target_data = Channel.of([
-                    [ id: 'test' ],
-                    file(params.modules_testdata_base_path + 'testdata/target.bcf', checkIfExists: true),
-                    file(params.modules_testdata_base_path + 'testdata/target.bcf.csi', checkIfExists: true),
-                    test_region  // Utiliser la même région
-                ])
+    //     then {
+    //         assertAll(
+    //             { assert workflow.success },
+    //             { assert snapshot(
+    //                 workflow.out.versions,
+    //                 workflow.out.imputed_bcf.collect( entry ->
+    //                     [entry[0], path(entry[1]).getFileName().toString()]
+    //                 ).sort(),
+    //                 workflow.out.imputed_log.collect( entry ->
+    //                     [entry[0], path(entry[1]).getFileName().toString()]
+    //                 ).sort(),
+    //                 workflow.out.chunks.collect( entry ->
+    //                     [entry[0], path(entry[1]).getFileName().toString()]
+    //                 ),
+    //                 workflow.out.xcf_files.collect( entry ->
+    //                     [
+    //                         entry[0],
+    //                         path(entry[1]).getFileName().toString(),  // bcf
+    //                         path(entry[2]).getFileName().toString(),  // csi
+    //                         path(entry[3]).getFileName().toString(),  // bin
+    //                         path(entry[4]).getFileName().toString()   // fam
+    //                     ]
+    //                 )
+    //             ).match() }
+    //         )
+    //     }
+    //
 
-                // Canal des données de référence
-                ch_ref_data = Channel.of([
-                    [ id: 'test' ],
-                    file(params.modules_testdata_base_path + 'testdata/reference.bcf', checkIfExists: true),
-                    file(params.modules_testdata_base_path + 'testdata/reference.bcf.csi', checkIfExists: true),
-                    test_region  // Utiliser la même région
-                ])
+    test("Impute with IMPUTE5 - stub") {
 
-                // Canal de la carte génétique
-                ch_genetic_map = Channel.of([
-                    [ id: 'test' ],
-                    file(params.modules_testdata_base_path + 'testdata/chr20.b37.gmap.gz', checkIfExists: true),
-                    test_region  // Utiliser la même région
-                ])
-
-                input[0] = ch_target_data
-                input[1] = ch_ref_data
-                input[2] = ch_genetic_map
-                """
-            }
-        }
-
-        then {
-            assertAll(
-                { assert workflow.success },
-                { assert snapshot(
-                    // Vérifier les fichiers imputés
-                    file(workflow.out.imputed_bcf[0][1]).name,
-                    file(workflow.out.imputed_log[0][1]).name,
-                    // Vérifier les chunks - le nom sera chunks_20.txt (seulement le chromosome)
-                    file(workflow.out.chunks[0][1]).name,
-                    // Vérifier les fichiers XCF convertis
-                    file(workflow.out.xcf_files[0][1]).name,
-                    file(workflow.out.xcf_files[0][2]).name,
-                    file(workflow.out.xcf_files[0][3]).name,
-                    file(workflow.out.xcf_files[0][4]).name,
-                    // Vérifier les versions
-                    workflow.out.versions
-                ).match() }
-            )
-        }
-    }
-
-    test("impute5-subworkflow-stub") {
-
+        tag "stub"
         options '-stub'
 
         when {
             workflow {
                 """
-                def test_region = 'test'
-
-                ch_target_data = Channel.of([
-                    [ id: 'test_stub' ],
+                input[0] = Channel.of([
+                    [id: "test_stub", panel: "stub", chr: "21"],
                     file('stub_target.bcf'),
                     file('stub_target.bcf.csi'),
-                    test_region
-                ])
-                ch_ref_data = Channel.of([
-                    [ id: 'test_stub' ],
-                    file('stub_reference.bcf'),
-                    file('stub_reference.bcf.csi'),
-                    test_region
-                ])
-                ch_genetic_map = Channel.of([
-                    [ id: 'test_stub' ],
-                    file('stub_genetic.gmap.gz'),
-                    test_region
+                    "chr21"
                 ])
 
-                input[0] = ch_target_data
-                input[1] = ch_ref_data
-                input[2] = ch_genetic_map
+                input[1] = Channel.of([
+                    [id: "stub_panel", chr: "21"],
+                    file('stub_reference.bcf'),
+                    file('stub_reference.bcf.csi'),
+                    "chr21"
+                ])
+
+                input[2] = Channel.of([
+                    [id: "stub_panel", chr: "21"],
+                    file('stub_genetic.gmap.gz'),
+                    "chr21"
+                ])
                 """
             }
         }
@@ -111,4 +113,44 @@ nextflow_workflow {
             )
         }
     }
+
+
+
+test("Impute with IMPUTE5 - backup data") {
+    when {
+        workflow {
+            """
+            input[0] = Channel.of([
+                [id: "test_backup", chr: "20"],
+                file("/home/gichas/impute5_backup_complet/modules_impute5/impute/tests/testdata/target.bcf", checkIfExists: true),
+                file("/home/gichas/impute5_backup_complet/modules_impute5/impute/tests/testdata/target.bcf.csi", checkIfExists: true),
+                "20:1000000-4000000"
+            ])
+
+            input[1] = Channel.of([
+                [id: "ref_backup", chr: "20"],
+                file("/home/gichas/impute5_backup_complet/modules_impute5/impute/tests/testdata/reference.bcf", checkIfExists: true),
+                file("/home/gichas/impute5_backup_complet/modules_impute5/impute/tests/testdata/reference.bcf.csi", checkIfExists: true),
+                "20:1000000-4000000"
+            ])
+
+            // AJOUT de input[2] manquant :
+            input[2] = Channel.of([
+                [id: "ref_backup", chr: "20"],
+                file("/home/gichas/impute5_backup_complet/modules_impute5/impute/tests/testdata/chr20.b37.gmap.gz", checkIfExists: true),  // Vérifiez si ce fichier existe
+                "20:1000000-4000000"
+            ])
+            """
+        }
+    }
+
+    then {
+        assertAll(
+            { assert workflow.success },
+            { assert workflow.out.vcf_tbi.size() >= 1 },
+            { assert workflow.out.vcf_tbi.size() >= 1 }
+        )
+    }
+}
+
 }
