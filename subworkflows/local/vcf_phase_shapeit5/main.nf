@@ -7,11 +7,11 @@ include { BCFTOOLS_INDEX as VCF_BCFTOOLS_INDEX_2 } from '../../../modules/nf-cor
 workflow VCF_PHASE_SHAPEIT5 {
 
     take:
-    ch_vcf        // channel (mandatory) : [ [id, chr], vcf, csi, pedigree ]
+    ch_vcf        // channel (mandatory) : [ [id, chr], vcf, index, pedigree ]
     ch_region     // channel (mandatory) : [ [chr, region], region ]
-    ch_ref        // channel (optional)  : [ [id, chr], ref, csi ]
-    ch_scaffold   // channel (optional)  : [ [id, chr], scaffold, csi ]
-    ch_map        // channel (mandatory) : [ [chr], map]
+    ch_ref        // channel (optional)  : [ [id, chr], vcf, index ]
+    ch_scaffold   // channel (optional)  : [ [id, chr], vcf, index ]
+    ch_map        // channel (optional) : [ [chr], map]
     chunk_model   // channel (mandatory) : [ model ]
 
     main:
@@ -88,4 +88,3 @@ workflow VCF_PHASE_SHAPEIT5 {
     vcf_tbi             = ch_vcf_tbi_join         // channel: [ [id, chr], vcf, csi ]
     versions            = ch_versions             // channel: [ versions.yml ]
 }
-

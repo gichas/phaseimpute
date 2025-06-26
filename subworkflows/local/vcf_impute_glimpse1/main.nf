@@ -1,4 +1,3 @@
-
 include { GLIMPSE_PHASE                      } from '../../../modules/nf-core/glimpse/phase'
 include { BCFTOOLS_INDEX as BCFTOOLS_INDEX_1 } from '../../../modules/nf-core/bcftools/index'
 include { GLIMPSE_LIGATE                     } from '../../../modules/nf-core/glimpse/ligate'
@@ -14,7 +13,6 @@ workflow VCF_IMPUTE_GLIMPSE1 {
     main:
 
     ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
 
     samples_file = Channel.of([[]]).collect()
     gmap_file    = Channel.of([[]]).collect()
@@ -63,5 +61,4 @@ workflow VCF_IMPUTE_GLIMPSE1 {
     emit:
     vcf_tbi             = ch_imputed_vcf_tbi    // channel: [ [id, panel, chr, tool], vcf, tbi ]
     versions            = ch_versions           // channel: [ versions.yml ]
-    multiqc_files       = ch_multiqc_files      // channel: [ multiqc_files.yml ]
 }

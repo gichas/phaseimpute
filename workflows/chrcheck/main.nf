@@ -1,5 +1,5 @@
-include { VCF_CHR_EXTRACT         } from '../../modules/local/vcf_chr_extract'
-include { BAM_CHR_EXTRACT         } from '../../modules/local/bam_chr_extract'
+include { VCFCHREXTRACT           } from '../../modules/local/vcfchrextract'
+include { BAMCHREXTRACT           } from '../../modules/local/bamchrextract'
 include { BAM_CHR_RENAME_SAMTOOLS } from '../../subworkflows/local/bam_chr_rename_samtools'
 include { VCF_CHR_RENAME_BCFTOOLS } from '../../subworkflows/local/vcf_chr_rename_bcftools'
 include { checkChr                } from './function.nf'
@@ -32,15 +32,15 @@ workflow CHRCHECK {
         // Check if channel is empty
         ch_vcf_split = Channel.empty()
         // Extract the contig names from the VCF files
-        VCF_CHR_EXTRACT(ch_input.vcf.map{ meta, file, _index, _chr -> [meta, file] })
-        ch_versions = ch_versions.mix(VCF_CHR_EXTRACT.out.versions)
-        ch_vcf_split = checkChr(VCF_CHR_EXTRACT.out.chr, ch_input.vcf)
+        VCFCHREXTRACT(ch_input.vcf.map{ meta, file, _index, _chr -> [meta, file] })
+        ch_versions = ch_versions.mix(VCFCHREXTRACT.out.versions)
+        ch_vcf_split = checkChr(VCFCHREXTRACT.out.chr, ch_input.vcf)
 
         ch_bam_split = Channel.empty()
         // Extract the contig names from the BAM files
-        BAM_CHR_EXTRACT(ch_input.bam.map{ meta, file, _index, _chr -> [meta, file] })
-        ch_versions = ch_versions.mix(BAM_CHR_EXTRACT.out.versions)
-        ch_bam_split = checkChr(BAM_CHR_EXTRACT.out.chr, ch_input.bam)
+        BAMCHREXTRACT(ch_input.bam.map{ meta, file, _index, _chr -> [meta, file] })
+        ch_versions = ch_versions.mix(BAMCHREXTRACT.out.versions)
+        ch_bam_split = checkChr(BAMCHREXTRACT.out.chr, ch_input.bam)
 
         if (params.rename_chr == true) {
             ch_bam_renamed = Channel.empty()

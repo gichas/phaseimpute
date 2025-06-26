@@ -34,7 +34,10 @@ nextflow_function {
                 """
                 input[0] = [
                     file(params.pipelines_testdata_base_path + "hum_data/panel/chr21/1000GP.chr21.s.norel.vcf.gz", checkIfExists: true),
-                    "test.myfile.txt.gz"
+                    "test.myfile.txt.gz",
+                    new URL("https://example.com/data.tar.gz"),
+                    new URL("https://example.com/subsite/data.vcf"),
+                    nextflow.file.http.XPath.get('http://www.nextflow.io/a/b/c.txt')
                 ]
                 """
             }
@@ -42,7 +45,7 @@ nextflow_function {
         then {
             assertAll(
                 { assert function.success },
-                { assert function.result == ['vcf', 'txt'] },
+                { assert function.result == ['vcf', 'txt', 'tar', 'vcf', 'txt'] },
                 { assert snapshot(function.result).match() }
             )
         }
@@ -320,7 +323,9 @@ nextflow_function {
         then {
             assertAll (
                 { assert function.success },
-                { assert snapshot(function.stdout).match() },
+                { assert snapshot(
+                    check_stdout(function.stdout)
+                ).match() },
                 { assert function.stdout.contains("WARN: Chr : [chrY] is missing from test") }
             )
         }
@@ -342,7 +347,9 @@ nextflow_function {
         then {
             assertAll (
                 { assert function.failed },
-                { assert snapshot(function.stdout).match() }
+                { assert snapshot(
+                    check_stdout(function.stdout)
+                ).match() }
             )
         }
     }
@@ -363,7 +370,9 @@ nextflow_function {
         then {
             assertAll (
                 { assert function.failed },
-                { assert snapshot(function.stdout).match() }
+                { assert snapshot(
+                    check_stdout(function.stdout)
+                ).match() }
             )
         }
     }
@@ -384,7 +393,9 @@ nextflow_function {
         then {
             assertAll (
                 { assert function.failed },
-                { assert snapshot(function.stdout).match() }
+                { assert snapshot(
+                    check_stdout(function.stdout)
+                ).match() }
             )
         }
     }
@@ -405,8 +416,109 @@ nextflow_function {
         then {
             assertAll (
                 { assert function.success },
-                { assert snapshot(function.stdout).match() }
+                { assert snapshot(check_stdout(function.stdout)).match() }
             )
         }
     }
+
+    test ("Test getRegionFromFai with all") {
+        function "getRegionFromFai"
+        tag "getRegionFromFai"
+        when {
+            function {
+                """
+                input[0] = "all"
+                input[1] = Channel.of([
+                    [genome:"GRCh37"],
+                    file(params.pipelines_testdata_base_path + "/hum_data/reference_genome/GRCh38.s.fa.gz", checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + "/hum_data/reference_genome/GRCh38.s.fa.gz.fai", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert function.success },
+                { assert snapshot(
+                    function.result
+                ).match() }
+            )
+        }
+    }
+
+    test ("Test getRegionFromFai with specified chr") {
+        function "getRegionFromFai"
+        tag "getRegionFromFai"
+        when {
+            function {
+                """
+                input[0] = "chr22"
+                input[1] = Channel.of([
+                    [genome:"GRCh37"],
+                    file(params.pipelines_testdata_base_path + "/hum_data/reference_genome/GRCh38.s.fa.gz", checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + "/hum_data/reference_genome/GRCh38.s.fa.gz.fai", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert function.success },
+                { assert snapshot(
+                    function.result
+                ).match() }
+            )
+        }
+    }
+
+    test ("Test getRegionFromFai with specified region without fasta") {
+        function "getRegionFromFai"
+        tag "getRegionFromFai"
+        when {
+            function {
+                """
+                input[0] = "chr22:0-4000"
+                input[1] = Channel.of([[], [], []])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert function.success },
+                { assert snapshot(
+                    function.result
+                ).match() }
+            )
+        }
+    }
+
+    test ("Test getRegionFromFai with an error") {
+        function "getRegionFromFai"
+        tag "getRegionFromFai"
+        when {
+            function {
+                """
+                input[0] = "chr22:0-4000:4648"
+                input[1] = Channel.of([[],[],[]])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert function.failed },
+                { assert snapshot(
+                    check_stdout(function.stdout)
+                ).match() }
+            )
+        }
+    }
+}
+
+def check_stdout(function_stdout) {
+    function_stdout[2..-1]
+        .findAll { !it.matches(/.*Nextflow [0-9]+\.[0-9]+\.[0-9]+ is available.*/) }
 }

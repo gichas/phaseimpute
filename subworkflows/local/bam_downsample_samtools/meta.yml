@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "BAM_DOWNSAMPLE_SAMTOOLS"
+description: |
+  Subworkflow to downsample a BAM file using samtools to a given depth.
+  BAM file depth will first be computed with samtools depth and then
+  downsampled with samtools view.
+keywords:
+  - BAM
+  - depth
+  - downsample
+  - samtools
+components:
+  - samtools/depth
+  - samtools/view
+  - gawk
+input:
+  - ch_bam:
+      description: Channel with input data
+      structure:
+        - meta:
+          type: map
+          description: Metadata map
+        - bam:
+          type: file
+          description: Input BAM file
+          pattern: "*.bam"
+        - index:
+          type: file
+          description: Input BAM index file
+          pattern: "*.{bai,csi}"
+  - ch_depth:
+      description: Channel with depth data
+      structure:
+        - meta:
+          type: map
+          description: Metadata map that will be combined with the input data map
+        - depth:
+          type: number
+          description: Depth to downsample to
+  - ch_fasta:
+      description: Channel with reference genome data
+      structure:
+        - meta:
+          type: map
+          description: Metadata map
+        - fasta:
+          type: file
+          description: FASTA file of the reference genome
+          pattern: "*.fa[sta]+"
+        - fai:
+          type: file
+          description: FASTA index file of the reference genome
+          pattern: "*.fai"
+output:
+  - bam_emul:
+      description: Channel with downsampled BAM files
+      structure:
+        - meta:
+          type: map
+          description: Metadata map combined with the ch_depth data map
+        - bam:
+          type: file
+          description: BAM file
+          pattern: "*.bam"
+        - index:
+          type: file
+          description: BAM index file
+          pattern: "*.{bai,csi}"
+  - versions:
+      description: Channel containing software versions file
+      structure:
+        - versions.yml:
+            type: file
+            description: File containing versions of the software used
+authors:
+  - "@louislenezet"
+maintainers:
+  - "@louislenezet"

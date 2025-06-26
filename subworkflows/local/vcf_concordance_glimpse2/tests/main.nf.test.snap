@@ -5,16 +5,18 @@
                 "0": [
                     [
                         {
-                            "id": "TestQuality"
+                            "id": "AllSamples"
                         },
-                        "TestQuality.txt:md5,0e199fabdd479db15849394e148bd1e1"
+                        "AllSamples.txt:md5,10e837d99ad7a390747962c0eed9babd"
                     ]
                 ],
                 "1": [
-                    "versions.yml:md5,11b3f37c4921334a4e4881b5fb466802",
+                    "versions.yml:md5,035008d86b5bde01b0261803e59cdc71",
                     "versions.yml:md5,185cbca93dea56aa1c36636716a6ac89",
-                    "versions.yml:md5,8bc5d870dd6bf1b13e84535e0b71ce39",
-                    "versions.yml:md5,cb85a5c4bc22951d41b21bc660e89637"
+                    "versions.yml:md5,7a2889705dd113cb9ca90ee77aae47a2",
+                    "versions.yml:md5,9e90d37b626a7cbf72f5aec280ca2d39",
+                    "versions.yml:md5,cb85a5c4bc22951d41b21bc660e89637",
+                    "versions.yml:md5,d2ec7fb40bc455b1804d39f920044f1c"
                 ],
                 "2": [
                     [
@@ -24,13 +26,13 @@
                         "NA12878.error.grp.txt.gz:md5,36f3fc826367dc6e89e95b58d90e94eb"
                     ],
                     [
-                        "NA12878.error.spl.txt.gz:md5,e7b0730fba0dc331de80ed911fcb6dcf"
-                    ],
-                    [
                         "NA12878.rsquare.grp.txt.gz:md5,4e2d341610d908d3f78685388f7d41b8"
                     ],
                     [
-                        "NA12878.rsquare.spl.txt.gz:md5,b9c53f1ad2c5fc5243ccbddb4a8b4260"
+                        "NA12878.txt:md5,b9c53f1ad2c5fc5243ccbddb4a8b4260"
+                    ],
+                    [
+                        "NA12878.txt:md5,e7b0730fba0dc331de80ed911fcb6dcf"
                     ],
                     [
                         "NA19401.error.cal.txt.gz:md5,46a6d42d469328096a66b8b172bce6d7"
@@ -39,13 +41,13 @@
                         "NA19401.error.grp.txt.gz:md5,0a37ae2f1a5ce339a798f0438d80fd82"
                     ],
                     [
-                        "NA19401.error.spl.txt.gz:md5,efd6bd3bf0c5530f0cf9b5ad055abe49"
-                    ],
-                    [
                         "NA19401.rsquare.grp.txt.gz:md5,8161d852ad5a77d5b83236960497cfe1"
                     ],
                     [
-                        "NA19401.rsquare.spl.txt.gz:md5,fb9ff57181626f06a1947b62ad18f97d"
+                        "NA19401.txt:md5,efd6bd3bf0c5530f0cf9b5ad055abe49"
+                    ],
+                    [
+                        "NA19401.txt:md5,fb9ff57181626f06a1947b62ad18f97d"
                     ]
                 ],
                 "multiqc_files": [
@@ -56,13 +58,13 @@
                         "NA12878.error.grp.txt.gz:md5,36f3fc826367dc6e89e95b58d90e94eb"
                     ],
                     [
-                        "NA12878.error.spl.txt.gz:md5,e7b0730fba0dc331de80ed911fcb6dcf"
-                    ],
-                    [
                         "NA12878.rsquare.grp.txt.gz:md5,4e2d341610d908d3f78685388f7d41b8"
                     ],
                     [
-                        "NA12878.rsquare.spl.txt.gz:md5,b9c53f1ad2c5fc5243ccbddb4a8b4260"
+                        "NA12878.txt:md5,b9c53f1ad2c5fc5243ccbddb4a8b4260"
+                    ],
+                    [
+                        "NA12878.txt:md5,e7b0730fba0dc331de80ed911fcb6dcf"
                     ],
                     [
                         "NA19401.error.cal.txt.gz:md5,46a6d42d469328096a66b8b172bce6d7"
@@ -71,35 +73,37 @@
                         "NA19401.error.grp.txt.gz:md5,0a37ae2f1a5ce339a798f0438d80fd82"
                     ],
                     [
-                        "NA19401.error.spl.txt.gz:md5,efd6bd3bf0c5530f0cf9b5ad055abe49"
-                    ],
-                    [
                         "NA19401.rsquare.grp.txt.gz:md5,8161d852ad5a77d5b83236960497cfe1"
                     ],
                     [
-                        "NA19401.rsquare.spl.txt.gz:md5,fb9ff57181626f06a1947b62ad18f97d"
+                        "NA19401.txt:md5,efd6bd3bf0c5530f0cf9b5ad055abe49"
+                    ],
+                    [
+                        "NA19401.txt:md5,fb9ff57181626f06a1947b62ad18f97d"
                     ]
                 ],
                 "stats": [
                     [
                         {
-                            "id": "TestQuality"
+                            "id": "AllSamples"
                         },
-                        "TestQuality.txt:md5,0e199fabdd479db15849394e148bd1e1"
+                        "AllSamples.txt:md5,10e837d99ad7a390747962c0eed9babd"
                     ]
                 ],
                 "versions": [
-                    "versions.yml:md5,11b3f37c4921334a4e4881b5fb466802",
+                    "versions.yml:md5,035008d86b5bde01b0261803e59cdc71",
                     "versions.yml:md5,185cbca93dea56aa1c36636716a6ac89",
-                    "versions.yml:md5,8bc5d870dd6bf1b13e84535e0b71ce39",
-                    "versions.yml:md5,cb85a5c4bc22951d41b21bc660e89637"
+                    "versions.yml:md5,7a2889705dd113cb9ca90ee77aae47a2",
+                    "versions.yml:md5,9e90d37b626a7cbf72f5aec280ca2d39",
+                    "versions.yml:md5,cb85a5c4bc22951d41b21bc660e89637",
+                    "versions.yml:md5,d2ec7fb40bc455b1804d39f920044f1c"
                 ]
             }
         ],
         "meta": {
-            "nf-test": "0.9.1",
-            "nextflow": "24.10.0"
+            "nf-test": "0.9.2",
+            "nextflow": "24.10.5"
         },
-        "timestamp": "2024-11-07T14:08:13.256185601"
+        "timestamp": "2025-06-19T09:40:27.710101323"
     }
 }

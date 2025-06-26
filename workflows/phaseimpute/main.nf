@@ -32,12 +32,12 @@ include { GAWK as FILTER_CHR_DWN                     } from '../../modules/nf-co
 include { VCF_NORMALIZE_BCFTOOLS                     } from '../../subworkflows/local/vcf_normalize_bcftools'
 include { VCF_SITES_EXTRACT_BCFTOOLS                 } from '../../subworkflows/local/vcf_sites_extract_bcftools'
 include { VCF_PHASE_SHAPEIT5                         } from '../../subworkflows/local/vcf_phase_shapeit5'
-include { CHUNK_PREPARE_CHANNEL                      } from '../../subworkflows/local/chunk_prepare_channel'
 include { VCF_CONCATENATE_BCFTOOLS as CONCAT_PANEL   } from '../../subworkflows/local/vcf_concatenate_bcftools'
 include { BCFTOOLS_STATS as BCFTOOLS_STATS_PANEL     } from '../../modules/nf-core/bcftools/stats'
+include { chunkPrepareChannel                        } from './function.nf'
 
 // Imputation
-include { LIST_TO_FILE                               } from '../../modules/local/list_to_file'
+include { LISTTOFILE                                 } from '../../modules/local/listtofile'
 include { BCFTOOLS_QUERY as BCFTOOLS_QUERY_IMPUTED   } from '../../modules/nf-core/bcftools/query'
 include { GAWK as GAWK_IMPUTED                       } from '../../modules/nf-core/gawk'
 include { VCF_SPLIT_BCFTOOLS as SPLIT_IMPUTED        } from '../../subworkflows/local/vcf_split_bcftools'
@@ -48,7 +48,7 @@ include { VCF_IMPUTE_GLIMPSE1                        } from '../../subworkflows/
 include { VCF_CONCATENATE_BCFTOOLS as CONCAT_GLIMPSE1} from '../../subworkflows/local/vcf_concatenate_bcftools'
 
 // GLIMPSE2 subworkflows
-include { BAM_IMPUTE_GLIMPSE2                        } from '../../subworkflows/local/bam_impute_glimpse2'
+include { BAM_VCF_IMPUTE_GLIMPSE2                    } from '../../subworkflows/local/bam_vcf_impute_glimpse2'
 include { VCF_CONCATENATE_BCFTOOLS as CONCAT_GLIMPSE2} from '../../subworkflows/local/vcf_concatenate_bcftools'
 
 // QUILT subworkflows
@@ -273,14 +273,14 @@ workflow PHASEIMPUTE {
                 filestuples.collect{it[1]}, filestuples.collect{it[2]}
             ] }
 
-        LIST_TO_FILE(
+        LISTTOFILE(
             ch_input_bams.map{ meta, file, _index -> [
                 meta, file, meta.metas.collect { it.id }
             ] }
         )
 
         ch_input_bams_withlist = ch_input_bams
-            .join(LIST_TO_FILE.out.txt)
+            .join(LISTTOFILE.out.txt)
 
         // Use panel from parameters if provided
         if (params.panel && !params.steps.split(',').find { it in ["all", "panelprep"] }) {
@@ -292,8 +292,7 @@ workflow PHASEIMPUTE {
 
             // Use chunks from parameters if provided or use previous chunks from panelprep
             if (params.chunks) {
-                CHUNK_PREPARE_CHANNEL(ch_chunks, "glimpse")
-                ch_chunks_glimpse1 = CHUNK_PREPARE_CHANNEL.out.chunks
+                ch_chunks_glimpse1 = chunkPrepareChannel(ch_chunks, "glimpse")
             }
 
             // Glimpse1 subworkflow
@@ -331,12 +330,11 @@ workflow PHASEIMPUTE {
             log.info("Impute with GLIMPSE2")
 
             if (params.chunks) {
-                CHUNK_PREPARE_CHANNEL(ch_chunks, "glimpse")
-                ch_chunks_glimpse2 = CHUNK_PREPARE_CHANNEL.out.chunks
+                ch_chunks_glimpse2 = chunkPrepareChannel(ch_chunks, "glimpse")
             }
 
             // Run imputation
-            BAM_IMPUTE_GLIMPSE2(
+            BAM_VCF_IMPUTE_GLIMPSE2(
                 ch_input_bams_withlist
                     .map{ [it[0], it[1], it[2], it[3]] }
                     .mix(ch_input_type.vcf.combine(Channel.of([[]]))),
@@ -344,9 +342,9 @@ workflow PHASEIMPUTE {
                 ch_chunks_glimpse2,
                 ch_fasta
             )
-            ch_versions = ch_versions.mix(BAM_IMPUTE_GLIMPSE2.out.versions)
+            ch_versions = ch_versions.mix(BAM_VCF_IMPUTE_GLIMPSE2.out.versions)
             // Concatenate by chromosomes
-            CONCAT_GLIMPSE2(BAM_IMPUTE_GLIMPSE2.out.vcf_tbi)
+            CONCAT_GLIMPSE2(BAM_VCF_IMPUTE_GLIMPSE2.out.vcf_tbi)
             ch_versions = ch_versions.mix(CONCAT_GLIMPSE2.out.versions)
 
             // Add results to input validate
@@ -381,8 +379,7 @@ workflow PHASEIMPUTE {
 
             // Use provided chunks if --chunks
             if (params.chunks) {
-                CHUNK_PREPARE_CHANNEL(ch_chunks, "quilt")
-                ch_chunks_quilt = CHUNK_PREPARE_CHANNEL.out.chunks
+                ch_chunks_quilt = chunkPrepareChannel(ch_chunks, "quilt")
             }
 
             // Impute BAMs with QUILT

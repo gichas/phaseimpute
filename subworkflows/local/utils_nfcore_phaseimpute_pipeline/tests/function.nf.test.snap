@@ -1,4 +1,40 @@
 {
+    "Test getRegionFromFai with specified region without fasta": {
+        "content": [
+            {
+                
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "24.10.5"
+        },
+        "timestamp": "2025-06-19T10:53:32.246531145"
+    },
+    "Test getRegionFromFai with an error": {
+        "content": [
+            [
+                "Invalid input_region: chr22:0-4000:4648"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "24.10.5"
+        },
+        "timestamp": "2025-06-19T09:39:16.168659666"
+    },
+    "Test getRegionFromFai with specified chr": {
+        "content": [
+            {
+                
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "24.10.5"
+        },
+        "timestamp": "2025-06-19T10:53:25.440787959"
+    },
     "Test checkFileIndex no error with empty channel": {
         "content": null,
         "meta": {
@@ -10,30 +46,26 @@
     "Test validateInputBatchTools only one vcf": {
         "content": [
             [
-                "N E X T F L O W  ~  version 24.10.1",
-                "Launching `/home/llenezet/repositories/phaseimpute/.nf-test-4fd3137d00243621dd8890f50dc172b6.nf` [tiny_joliot] DSL2 - revision: 187359daf3",
                 "When using a Variant Calling Format file as input, only one file can be provided. If you have multiple single-sample VCF files, please merge them into a single multisample VCF file."
             ]
         ],
         "meta": {
-            "nf-test": "0.9.1",
-            "nextflow": "24.10.1"
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.4"
         },
-        "timestamp": "2025-02-21T09:28:56.687203026"
+        "timestamp": "2025-06-18T15:44:45.241704362"
     },
     "Test checkMetaChr warning": {
         "content": [
             [
-                "N E X T F L O W  ~  version 24.10.1",
-                "Launching `/home/llenezet/repositories/phaseimpute/.nf-test-31b2c458e8c6ce6ddf450eb32ea28631.nf` [drunk_mahavira] DSL2 - revision: 2443da0500",
                 "WARN: Chr : [chrY] is missing from test"
             ]
         ],
         "meta": {
-            "nf-test": "0.9.1",
-            "nextflow": "24.10.1"
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.4"
         },
-        "timestamp": "2025-02-21T09:28:42.524572007"
+        "timestamp": "2025-06-18T15:45:50.70859829"
     },
     "Test Function exportCsv": {
         "content": null,
@@ -43,60 +75,69 @@
         },
         "timestamp": "2024-11-06T15:32:58.039856651"
     },
+    "Test getRegionFromFai with all": {
+        "content": [
+            {
+                
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "24.10.5"
+        },
+        "timestamp": "2025-06-19T10:53:18.40819287"
+    },
     "Test validateInputBatchTools vcf only for glimpse": {
         "content": [
             [
-                "N E X T F L O W  ~  version 24.10.1",
-                "Launching `/home/llenezet/repositories/phaseimpute/.nf-test-985177066200b5ce5b0de4074aa78c09.nf` [spontaneous_yalow] DSL2 - revision: e002e0bfb7",
                 "Stitch or Quilt software cannot run with VCF or BCF files. Please provide alignment files (i.e. BAM or CRAM)."
             ]
         ],
         "meta": {
-            "nf-test": "0.9.1",
-            "nextflow": "24.10.1"
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.4"
         },
-        "timestamp": "2025-02-21T09:28:49.440526671"
+        "timestamp": "2025-06-18T15:44:38.597973259"
     },
     "Test validateInputBatchTools success batch": {
         "content": [
             [
-                "N E X T F L O W  ~  version 24.10.1",
-                "Launching `/home/llenezet/repositories/phaseimpute/.nf-test-4cc378945f5cde91be4d1b076949eb0e.nf` [desperate_miescher] DSL2 - revision: af75e755d1",
                 "WARN: Glimpse2 or Quilt software is selected and the number of input files (151) is less than the batch size (60). The input files will be processed in 3 batches."
             ]
         ],
         "meta": {
-            "nf-test": "0.9.1",
-            "nextflow": "24.10.1"
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.4"
         },
-        "timestamp": "2025-02-21T09:29:11.538542285"
+        "timestamp": "2025-06-18T15:44:57.400190926"
     },
     "Test getFileExtension non empty list": {
         "content": [
             [
+                "vcf",
+                "txt",
+                "tar",
                 "vcf",
                 "txt"
             ]
         ],
         "meta": {
             "nf-test": "0.9.1",
-            "nextflow": "24.10.0"
+            "nextflow": "24.10.4"
         },
-        "timestamp": "2024-10-31T13:15:08.856706046"
+        "timestamp": "2025-03-03T15:47:37.629077209"
     },
     "Test validateInputBatchTools error batch": {
         "content": [
             [
-                "N E X T F L O W  ~  version 24.10.1",
-                "Launching `/home/llenezet/repositories/phaseimpute/.nf-test-7d26cf5ac00827d2d108edb45e040f7f.nf` [hungry_banach] DSL2 - revision: b43a7ecbe2",
                 "WARN: Glimpse2 or Quilt software is selected and the number of input files (151) is less than the batch size (60). The input files will be processed in 3 batches.",
                 "Stitch or Glimpse1 software is selected and the number of input files (151) is less than the batch size (60). Splitting the input files in batches would induce batch effect."
             ]
         ],
         "meta": {
-            "nf-test": "0.9.1",
-            "nextflow": "24.10.1"
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.4"
         },
-        "timestamp": "2025-02-21T09:29:04.24007658"
+        "timestamp": "2025-06-18T15:44:51.349913082"
     }
 }

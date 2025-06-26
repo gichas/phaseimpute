@@ -3,7 +3,6 @@ include { BCFTOOLS_VIEW   } from '../../../modules/nf-core/bcftools/view'
 include { VCFLIB_VCFFIXUP } from '../../../modules/nf-core/vcflib/vcffixup/main'
 include { BCFTOOLS_INDEX  } from '../../../modules/nf-core/bcftools/index'
 
-
 workflow VCF_NORMALIZE_BCFTOOLS {
     take:
     ch_vcf_tbi      // channel: [ [id, chr], vcf, index ]

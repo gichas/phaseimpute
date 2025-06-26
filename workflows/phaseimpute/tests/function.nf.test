@@ -1,0 +1,86 @@
+nextflow_function {
+    /*
+    The following tests are for the functions in the main.nf script
+    They are tested using the --verbose argument
+    */
+
+    name "Test function phaseimpute"
+    script "../function.nf"
+    tag "function"
+
+    test("Prepare chunks channel Glimpse") {
+        function "chunkPrepareChannel"
+        tag "chunkPrepareChannel"
+        when {
+            function {
+                """
+                input[0] = Channel.of([
+                    [id: "1000GP", chr: "chr21"],
+                    file(params.pipelines_testdata_base_path + "hum_data/panel/chr21/1000GP.chr21_chunks.txt", checkIfExist:true),
+                ])
+                input[1] = "glimpse"
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert function.success },
+                { assert snapshot(
+                    function.result
+                ).match()}
+            )
+        }
+    }
+
+    test("Prepare chunks channel Quilt") {
+        function "chunkPrepareChannel"
+        tag "chunkPrepareChannel"
+        when {
+            function {
+                """
+                input[0] = Channel.of([
+                    [id: "1000GP", chr: "chr21"],
+                    file(params.pipelines_testdata_base_path + "hum_data/panel/chr21/1000GP.chr21_chunks.txt", checkIfExist:true),
+                ])
+                input[1] = "quilt"
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert function.success },
+                { assert snapshot(
+                    function.result
+                ).match()}
+            )
+        }
+    }
+
+    test("Prepare chunks channel error tool") {
+        function "chunkPrepareChannel"
+        tag "chunkPrepareChannel"
+        when {
+            function {
+                """
+                input[0] = Channel.of([
+                    [id: "1000GP", chr: "chr21"],
+                    file(params.pipelines_testdata_base_path + "hum_data/panel/chr21/1000GP.chr21_chunks.txt", checkIfExist:true),
+                ])
+                input[1] = "glimpse2"
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.failed },
+                { assert snapshot(
+                    workflow.stdout[2..-1]
+                        .findAll { !it.matches(/.*Nextflow [0-9]+\.[0-9]+\.[0-9]+ is available.*/) }
+                ).match() }
+            )
+        }
+    }
+}

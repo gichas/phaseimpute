@@ -1,0 +1,110 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "BAM_VCF_IMPUTE_GLIMPSE2"
+description: |
+  Subworkflow to impute BAM/VCF files using GLIMPSE2 software by chunks of
+  chromosomes. Chunks are then ligated to get the final VCF file by chromosomes.
+keywords:
+  - BAM
+  - VCF
+  - imputation
+  - glimpse2
+components:
+  - glimpse2/phase
+  - glimpse2/ligate
+  - bcftools/index
+input:
+  - ch_input:
+      description: Channel with input data
+      structure:
+        - meta:
+          type: map
+          description: Metadata map
+        - file:
+          type: file
+          description: List of input BAM or VCF files
+          pattern: "*.{bam,vcf,bcf,vcf.gz}"
+        - index:
+          type: file
+          description: List of input index file
+          pattern: "*.{bai,csi,tbi}"
+        - bamlist:
+          type: file
+          description: |
+            File containing the list of BAM/CRAM files to be phased.
+            One file per line and a second column can be added to indicate the sample name.
+          pattern: "*.{txt,tsv}"
+  - ch_panel:
+      description: Channel with reference panel variants data
+      structure:
+        - meta:
+          type: map
+          description: |
+            Metadata map that will be combined with the input data map
+            Need to have the "chr" as chromosome name and "id" as panel name
+        - vcf:
+          type: file
+          description: Panel VCF files by chromosomes
+          pattern: "*.{vcf,bcf,vcf.gz}"
+        - index:
+          type: file
+          description: Panel VCF index files
+          pattern: "*.{tbi,csi}"
+  - ch_chunks:
+      description: Channel with chunks region to impute by chromosomes
+      structure:
+        - meta:
+          type: map
+          description: |
+            Metadata map that will be combined with the input data map
+            Need to have the same map as ch_panel
+        - region1:
+          type: string
+          description: Target region used for imputation, including left and right buffers
+          pattern: "[chr][0-9]+:[0-9]+-[0-9]+"
+        - region2:
+          type: string
+          description: Target imputed region, excluding left and right buffers
+          pattern: "[chr][0-9]+:[0-9]+-[0-9]+"
+  - ch_fasta:
+      description: Channel with reference genome data
+      structure:
+        - meta:
+          type: map
+          description: Metadata map
+        - fasta:
+          type: file
+          description: FASTA file of the reference genome
+          pattern: "*.fa[sta]+"
+        - fai:
+          type: file
+          description: FASTA index file of the reference genome
+          pattern: "*.fai"
+output:
+  - vcf_tbi:
+      description: Channel with imputed VCF files
+      structure:
+        - meta:
+          type: map
+          description: |
+            Metadata map combined with the ch_panel data map.
+            It contains the "chr" name of the ch_panel map and
+            "panel" as the "id" of ch_posfile.
+            {"tools" : "glimpse2"} is added.
+        - vcf:
+          type: file
+          description: VCF imputed file merged by chromosomes
+          pattern: "*.{vcf,bcf,vcf.gz}"
+        - index:
+          type: file
+          description: VCF index file
+          pattern: "*.{tbi,csi}"
+  - versions:
+      description: Channel containing software versions file
+      structure:
+        - versions.yml:
+            type: file
+            description: File containing versions of the software used
+authors:
+  - "@louislenezet"
+maintainers:
+  - "@louislenezet"

@@ -9,14 +9,13 @@
 */
 
 include { UTILS_NFSCHEMA_PLUGIN     } from '../../nf-core/utils_nfschema_plugin'
-include { paramsSummaryMap          } from 'plugin/nf-schema'
 include { samplesheetToList         } from 'plugin/nf-schema'
 include { completionEmail           } from '../../nf-core/utils_nfcore_pipeline'
 include { completionSummary         } from '../../nf-core/utils_nfcore_pipeline'
 include { imNotification            } from '../../nf-core/utils_nfcore_pipeline'
+include { paramsSummaryMap          } from 'plugin/nf-schema'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NEXTFLOW_PIPELINE   } from '../../nf-core/utils_nextflow_pipeline'
-include { GET_REGION                } from '../get_region'
 include { SAMTOOLS_FAIDX            } from '../../../modules/nf-core/samtools/faidx'
 
 /*
@@ -155,8 +154,8 @@ workflow PIPELINE_INITIALISATION {
             ch_panel = Channel.fromList(samplesheetToList(
                 params.panel, "${projectDir}/assets/schema_input_panel.json"
             )).map {
-                meta, chr, file, index ->
-                    [ meta + [id:meta.id.toString()], chr, file, index ]
+                meta, file, index ->
+                    [ meta + [id:meta.id.toString()], file, index ]
             }
         } else {
             // #TODO Wait for `oneOf()` to be supported in the nextflow_schema.json
@@ -164,7 +163,7 @@ workflow PIPELINE_INITIALISATION {
         }
     } else {
         // #TODO check if panel is required
-        ch_panel        = Channel.of([[],[],[]])
+        ch_panel = Channel.of([[],[],[]])
     }
 
     //
@@ -172,9 +171,7 @@ workflow PIPELINE_INITIALISATION {
     //
     if (params.input_region == null){
         // #TODO Add support for string input
-        GET_REGION ("all", ch_ref_gen)
-        ch_versions = ch_versions.mix(GET_REGION.out.versions)
-        ch_regions  = GET_REGION.out.regions
+        ch_regions  = getRegionFromFai("all", ch_ref_gen)
     }  else  if (params.input_region.endsWith(".csv")) {
         println "Region file provided as input is a csv file"
         ch_regions = Channel.fromList(samplesheetToList(
@@ -226,10 +223,10 @@ workflow PIPELINE_INITIALISATION {
     // Create posfile channel
     //
     if (params.posfile) {
-        ch_posfile = Channel // ["meta", "chr", "vcf", "index", "hap", "legend"]
+        ch_posfile = Channel // ["meta", "vcf", "index", "hap", "legend"]
             .fromList(samplesheetToList(params.posfile, "${projectDir}/assets/schema_posfile.json"))
-            .map { meta, chr, vcf, index, hap, legend ->
-                [ meta + [id:meta.id.toString()], chr, vcf, index, hap, legend ]
+            .map { meta, vcf, index, hap, legend ->
+                [ meta + [id:meta.id.toString()], vcf, index, hap, legend ]
             }
     } else {
         ch_posfile = Channel.of([[],[],[],[],[]])
@@ -249,8 +246,8 @@ workflow PIPELINE_INITIALISATION {
     if (params.chunks) {
         ch_chunks = Channel
             .fromList(samplesheetToList(params.chunks, "${projectDir}/assets/schema_chunks.json"))
-            .map { meta, chr, chunks ->
-                [ meta + [id:meta.id.toString()], chr, chunks ]
+            .map { meta, chunks ->
+                [ meta + [id:meta.id.toString()], chunks ]
             }
     } else {
         ch_chunks = Channel.of([[],[]])
@@ -303,7 +300,7 @@ workflow PIPELINE_INITIALISATION {
         }
 
     ch_posfile = ch_posfile
-        .combine(ch_regions.collect{ it[0]["chr"]}.toList())
+        .combine(ch_regions.collect{ it[0]["chr"] }.toList())
         .filter { meta, _vcf, _index, _hap, _legend, chrs ->
             meta.chr in chrs
         }
@@ -537,13 +534,40 @@ def checkMetaChr(chr_a, chr_b, name){
 }
 
 //
+// Get region from fasta fai file
+//
+def getRegionFromFai(input_region, ch_fasta) {
+    def ch_regions = Channel.empty()
+    // Gather regions to use and create the meta map
+    if (input_region ==~ '^(chr)?[0-9XYM]+$' || input_region == "all") {
+        ch_regions = ch_fasta.map{it -> it[2]}
+            .splitCsv(header: ["chr", "size", "offset", "lidebase", "linewidth", "qualoffset"], sep: "\t")
+            .map{it -> [chr:it.chr, region:"0-"+it.size]}
+        if (input_region != "all") {
+            ch_regions = ch_regions.filter{it.chr == input_region}
+        }
+        ch_regions = ch_regions
+            .map{ [[chr: it.chr, region: it.chr + ":" + it.region], it.chr + ":" + it.region]}
+    } else {
+        if (input_region ==~ '^chr[0-9XYM]+:[0-9]+-[0-9]+$') {
+            ch_regions = Channel.from([input_region])
+                .map{ [[chr: it.split(":")[0], "region": it], it]}
+        } else {
+            error "Invalid input_region: ${input_region}"
+        }
+    }
+    return ch_regions
+}
+
+//
 // Get file extension
 //
 def getFileExtension(file) {
     def file_name = ""
-
-    if (file instanceof Path || file instanceof nextflow.file.http.XPath) {
+    if (file instanceof Path) {
         file_name = file.name
+    } else if (file instanceof java.net.URL) {
+        file_name = file.path.tokenize('/')[-1]
     } else if (file instanceof CharSequence) {
         file_name = file.toString()
     } else if (file instanceof List) {
@@ -551,7 +575,6 @@ def getFileExtension(file) {
     } else {
         error "Type not supported: ${file.getClass()}"
     }
-
     // Remove .gz if present and get the last part after splitting by "."
     return file_name.replace(".gz", "").split("\\.").last()
 }
@@ -651,6 +674,7 @@ def genomeExistsError() {
         error(error_string)
     }
 }
+
 //
 // Generate methods description for MultiQC
 //
@@ -728,4 +752,3 @@ def methodsDescriptionText(mqc_methods_yaml) {
 
     return description_html.toString()
 }
-

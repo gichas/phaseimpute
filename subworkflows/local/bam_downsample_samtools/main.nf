@@ -1,6 +1,5 @@
 include { SAMTOOLS_DEPTH } from '../../../modules/nf-core/samtools/depth'
 include { SAMTOOLS_VIEW  } from '../../../modules/nf-core/samtools/view'
-include { SAMTOOLS_INDEX } from '../../../modules/nf-core/samtools/index'
 include { GAWK           } from '../../../modules/nf-core/gawk'
 
 workflow BAM_DOWNSAMPLE_SAMTOOLS {

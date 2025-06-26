@@ -65,7 +65,6 @@ nextflow_workflow {
 
     test("Rename: VCF no chr + fasta chr") {
         config "./nextflow_rename.config"
-        tag "test"
         setup {
             run("BAM_CHR_RENAME_SAMTOOLS", alias: "PREPROCESS") {
                 script "../../../subworkflows/local/bam_chr_rename_samtools/main.nf"

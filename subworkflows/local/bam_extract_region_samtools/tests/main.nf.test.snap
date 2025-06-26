@@ -2,9 +2,9 @@
     "Get subregion of bam file 10000bp": {
         "content": [
             [
-                "versions.yml:md5,17ab59cf0e993cc8db9086093cdeb6e2",
-                "versions.yml:md5,3043c69a324445a251b7e9569bd012d3",
-                "versions.yml:md5,4dbd8db078f2e38fb335b8c3ee3db169"
+                "versions.yml:md5,35214e2b81334b48d64a1cd23426d1d8",
+                "versions.yml:md5,ab0ecdeafb26aa07f142b88a52aef4bc",
+                "versions.yml:md5,eea16f726c73c83f859d8e2c3f7e6d26"
             ],
             [
                 
@@ -15,17 +15,17 @@
             ]
         ],
         "meta": {
-            "nf-test": "0.9.1",
-            "nextflow": "24.10.0"
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.4"
         },
-        "timestamp": "2024-11-07T13:55:45.543427226"
+        "timestamp": "2025-06-18T15:50:29.339863683"
     },
     "Get subregion of bam file 1000bp": {
         "content": [
             [
-                "versions.yml:md5,17ab59cf0e993cc8db9086093cdeb6e2",
-                "versions.yml:md5,3043c69a324445a251b7e9569bd012d3",
-                "versions.yml:md5,4dbd8db078f2e38fb335b8c3ee3db169"
+                "versions.yml:md5,35214e2b81334b48d64a1cd23426d1d8",
+                "versions.yml:md5,ab0ecdeafb26aa07f142b88a52aef4bc",
+                "versions.yml:md5,eea16f726c73c83f859d8e2c3f7e6d26"
             ],
             [
                 
@@ -36,9 +36,9 @@
             ]
         ],
         "meta": {
-            "nf-test": "0.9.1",
-            "nextflow": "24.10.0"
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.4"
         },
-        "timestamp": "2024-11-07T13:57:19.117705738"
+        "timestamp": "2025-06-18T15:50:46.00756499"
     }
 }
