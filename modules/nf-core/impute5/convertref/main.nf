@@ -25,7 +25,7 @@ process IMPUTE5_CONVERTREF {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def maf = task.ext.maf ?: 0.03125  
-    def chrom = region.split(':')[0] 
+    def chrom = region.contains(':') ? region.split(':')[0] : region
 
     """
 

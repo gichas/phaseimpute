@@ -166,25 +166,51 @@ workflow PIPELINE_INITIALISATION {
         ch_panel = Channel.of([[],[],[]])
     }
 
+    log.info "DEBUG: params.input_region = ${params.input_region}"
+ch_ref_gen.view { "DEBUG ch_ref_gen: $it" }
+
     //
     // Create channel from region input
     //
-    if (params.input_region == null){
-        // #TODO Add support for string input
-        ch_regions  = getRegionFromFai("all", ch_ref_gen)
-    }  else  if (params.input_region.endsWith(".csv")) {
-        println "Region file provided as input is a csv file"
-        ch_regions = Channel.fromList(samplesheetToList(
-            params.input_region, "${projectDir}/assets/schema_input_region.json"
-        ))
-        .map{ chr, start, end ->
-            assert end >= start : "End position must be greater than or equal to start position"
-            [["chr": chr], chr + ":" + start + "-" + end]
-        }
-        .map{ metaC, region -> [metaC + ["region": region], region]}
-    } else {
-        error "Region file provided is of another format than CSV (not yet supported). Please separate your reference genome by chromosome and use the samplesheet format."
+    //
+// Create channel from region input
+//
+if (params.input_region == null){
+    // #TODO Add support for string input
+    ch_regions  = getRegionFromFai("all", ch_ref_gen)
+} else if (params.input_region.endsWith(".csv")) {
+    println "Region file provided as input is a csv file"
+    
+    // 🔍 DEBUG: Vérifiez le contenu du fichier CSV
+    def region_file = file(params.input_region)
+    log.info "DEBUG: Region file exists: ${region_file.exists()}"
+    log.info "DEBUG: Region file content:"
+    region_file.readLines().each { line -> log.info "  ${line}" }
+    
+    // 🔍 DEBUG: Testez samplesheetToList
+    def samplesheet_result = samplesheetToList(
+        params.input_region, "${projectDir}/assets/schema_input_region.json"
+    )
+    log.info "DEBUG: samplesheetToList result: ${samplesheet_result}"
+    log.info "DEBUG: samplesheetToList size: ${samplesheet_result.size()}"
+    
+    ch_regions = Channel.fromList(samplesheet_result)
+    .view { "DEBUG: Raw samplesheet entry: $it" }
+    .map{ chr, start, end ->
+        log.info "DEBUG: Processing chr=${chr}, start=${start}, end=${end}"
+        assert end >= start : "End position must be greater than or equal to start position"
+        [["chr": chr], chr + ":" + start + "-" + end]
     }
+    .view { "DEBUG: After first map: $it" }
+    .map{ metaC, region -> 
+        def final_result = [metaC + ["region": region], region]
+        log.info "DEBUG: Final region: ${final_result}"
+        return final_result
+    }
+    .view { "DEBUG: Final ch_regions: $it" }
+    }else {
+    error "Region file provided is of another format than CSV (not yet supported). Please separate your reference genome by chromosome and use the samplesheet format."
+}
 
     //
     // Create map channel
@@ -261,28 +287,43 @@ workflow PIPELINE_INITIALISATION {
     chr_regions = extractChr(ch_regions)
 
     // Check that the chromosomes names that will be used are all present in different inputs
-    chr_ref_mis     = checkMetaChr(chr_regions, chr_ref, "reference genome")
-    chr_chunks_mis  = checkMetaChr(chr_regions, extractChr(ch_chunks), "chromosome chunks")
-    chr_map_mis     = checkMetaChr(chr_regions, extractChr(ch_map), "genetic map")
-    chr_panel_mis   = checkMetaChr(chr_regions, extractChr(ch_panel), "reference panel")
-    chr_posfile_mis = checkMetaChr(chr_regions, extractChr(ch_posfile), "position")
+chr_ref_mis     = checkMetaChr(chr_regions, chr_ref, "reference genome")
+chr_chunks_mis  = checkMetaChr(chr_regions, extractChr(ch_chunks), "chromosome chunks")
+chr_map_mis     = checkMetaChr(chr_regions, extractChr(ch_map), "genetic map")
+chr_panel_mis   = checkMetaChr(chr_regions, extractChr(ch_panel), "reference panel")
+chr_posfile_mis = checkMetaChr(chr_regions, extractChr(ch_posfile), "position")
 
-    // Compute the intersection of all chromosomes names
-    chr_all_mis = chr_ref_mis.concat(chr_chunks_mis, chr_map_mis, chr_panel_mis, chr_posfile_mis)
-        .unique()
-        .toList()
-        .subscribe{ chr ->
-            if (chr.size() > 0) {
-                def chr_names = chr.size() > params.max_chr_names ? chr[0..params.max_chr_names - 1] + ['...'] : chr
-                log.warn "The following contigs are absent from at least one file : ${chr_names} and therefore won't be used" } }
+// 🔍 DEBUG: Voyons ce que contiennent les channels
+chr_regions.view { "DEBUG chr_regions: $it" }
+chr_ref_mis.view { "DEBUG chr_ref_mis: $it" }
+chr_chunks_mis.view { "DEBUG chr_chunks_mis: $it" }
+chr_map_mis.view { "DEBUG chr_map_mis: $it" }
+chr_panel_mis.view { "DEBUG chr_panel_mis: $it" }
+chr_posfile_mis.view { "DEBUG chr_posfile_mis: $it" }
 
-    ch_regions = ch_regions
-        .combine(chr_all_mis.toList())
-        .filter { meta, _regions, chr_mis ->
-            !(meta.chr in chr_mis)
-        }
-        .map { meta, regions, _chr_mis -> [meta, regions] }
-        .ifEmpty { error "No regions left to process" }
+// Compute the intersection of all chromosomes names
+chr_all_mis = chr_ref_mis.concat(chr_chunks_mis, chr_map_mis, chr_panel_mis, chr_posfile_mis)
+    .unique()
+    .toList()
+    .view { "DEBUG chr_all_mis: $it" }  // 🔍 DEBUG
+    .subscribe{ chr ->
+        if (chr.size() > 0) {
+            def chr_names = chr.size() > params.max_chr_names ? chr[0..params.max_chr_names - 1] + ['...'] : chr
+            log.warn "The following contigs are absent from at least one file : ${chr_names} and therefore won't be used" 
+        } 
+    }
+
+ch_regions = ch_regions
+    .combine(chr_all_mis.toList())
+    .view { "DEBUG before filter: $it" }  // 🔍 DEBUG
+    .filter { meta, _regions, chr_mis ->
+        def should_keep = !(meta.chr in chr_mis)
+        log.info "DEBUG filter: chr=${meta.chr}, chr_mis=${chr_mis}, keeping=${should_keep}"  // 🔍 DEBUG
+        return should_keep
+    }
+    .view { "DEBUG after filter: $it" }  // 🔍 DEBUG
+    .map { meta, regions, _chr_mis -> [meta, regions] }
+    .ifEmpty { error "No regions left to process" }
 
     ch_regions
         .map { it[1] }
