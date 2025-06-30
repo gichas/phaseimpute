@@ -1,0 +1,2 @@
+task_id	name	status	energy_consumption	CO2e	time	cpus	powerdraw_cpu	cpu_model	cpu_usage	requested_memory
+1	PIPELINE_INITIALISATION:SAMTOOLS_FAIDX (genome.fa)	CACHED	147.64 mWh	70.13 mg	1m 16s	1	12.0	13th Gen Intel(R) Core(TM) i7-1365U	0.149	6.0 GB

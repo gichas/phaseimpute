@@ -1,0 +1,2 @@
+panel,chr,vcf,index
+reference,chr20,/mnt/d/Stage/phaseimpute/subworkflows/local/backup_impute5/tests/testdata/reference.bcf,/mnt/d/Stage/phaseimpute/subworkflows/local/backup_impute5/tests/testdata/reference.bcf.csi

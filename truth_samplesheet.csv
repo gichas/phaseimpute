@@ -1,0 +1,2 @@
+sample,tools,file,index
+test_sample,impute5,/mnt/d/Stage/phaseimpute/subworkflows/local/backup_impute5/tests/testdata/target_unmasked.bcf,/mnt/d/Stage/phaseimpute/subworkflows/local/backup_impute5/tests/testdata/target_unmasked.bcf.csi

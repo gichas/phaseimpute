@@ -1,0 +1,2 @@
+task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
+1	e5/49010b	4529	PIPELINE_INITIALISATION:SAMTOOLS_FAIDX (genome.fa)	CACHED	0	2025-06-30 09:11:40.122	1m 18s	1m 16s	14.9%	4.8 MB	10.5 MB	2.9 GB	5.5 KB
