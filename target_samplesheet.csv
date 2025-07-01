@@ -1,2 +1,2 @@
 sample,tools,file,index
-test_sample,impute5,/mnt/d/Stage/phaseimpute/subworkflows/local/backup_impute5/tests/testdata/target.bcf,/mnt/d/Stage/phaseimpute/subworkflows/local/backup_impute5/tests/testdata/target.bcf.csi
+test_sample,impute5,subworkflows/local/backup_impute5/tests/testdata/target.bcf,subworkflows/local/backup_impute5/tests/testdata/target.bcf.csi

@@ -1,2 +1,2 @@
 chr,map
-chr20,/mnt/d/Stage/phaseimpute/subworkflows/local/backup_impute5/tests/testdata/chr20.b37.gmap.gz
+chr20,subworkflows/local/backup_impute5/tests/testdata/chr20.b37.gmap.gz
