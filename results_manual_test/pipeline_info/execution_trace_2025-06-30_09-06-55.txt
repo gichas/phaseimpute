@@ -1,2 +1,0 @@
-task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
-1	b4/7a3d5f	4272	PIPELINE_INITIALISATION:SAMTOOLS_FAIDX (genome.fa)	FAILED	1	2025-06-30 09:10:14.286	405ms	310ms	-	-	-	-	-

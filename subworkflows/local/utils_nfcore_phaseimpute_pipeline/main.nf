@@ -452,8 +452,8 @@ def validateInputParameters() {
                 assert params.posfile : "No --posfile provided for --steps impute"
         }
         // Required by all tools except STITCH
-        if (params.tools != "stitch") {
-                assert params.chunks : "No --chunks provided for --steps impute"
+        if (!params.tools.split(',').find { it in ["stitch", "impute5"] }) {
+            assert params.chunks : "No --chunks provided for --steps impute"
         }
         // Required by GLIMPSE1 and GLIMPSE2 only
         if (params.tools.split(',').contains("glimpse")) {

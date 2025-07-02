@@ -1,2 +1,0 @@
-task_id	name	status	energy_consumption	CO2e	time	cpus	powerdraw_cpu	cpu_model	cpu_usage	requested_memory
-1	PIPELINE_INITIALISATION:SAMTOOLS_FAIDX (genome.fa)	FAILED	1.16 mWh	552.09 ug	174.0ms	1	12.0	null	1.0	6.0 GB

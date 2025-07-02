@@ -117,6 +117,50 @@ nextflow_pipeline {
     }
 }
 
+test("Check test_impute5_custom") {
+        tag "test_impute5_custom"
+        // Pas besoin de config spéciale, on utilise les paramètres directement
+        
+        when {
+    params {
+        publish_dir_mode = "copy"
+        input = "${projectDir}/target_samplesheet.csv"
+        panel = "${projectDir}/panel_samplesheet.csv"
+        map = "${projectDir}/map_samplesheet.csv"
+        input_region = "${projectDir}/region_samplesheet.csv"
+        input_truth = "${projectDir}/truth_samplesheet.csv"
+        outdir = "$outputDir"
+        tools = 'impute5'
+        steps = 'impute'
+        rename_chr = true
+    }
+}
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    path("${outputDir}/prep_panel/")
+                        .list()
+                        .collect { getRecursiveFileNames(it, outputDir) }
+                        .flatten(),
+                    path("${outputDir}/imputation/")
+                        .list()
+                        .collect { getRecursiveFileNames(it, outputDir) }
+                        .flatten(),
+                    path("${outputDir}/validation/")
+                        .list()
+                        .collect { getRecursiveFileNames(it, outputDir) }
+                        .flatten(),
+                    path("$outputDir/imputation/impute5/concat/").list().sort(),
+                    path("$outputDir/imputation/csv/impute.csv").readLines().sort()
+                ).match()
+                }
+            )
+        }
+    }
+
+
     test("Check test_sim") {
         tag "test_sim"
         config "../../../conf/test_sim.config"
