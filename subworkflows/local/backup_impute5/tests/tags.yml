@@ -1,3 +1,0 @@
-impute5/subworkflow:
-  - tests/subworkflows/local/impute5_subworkflow/main.nf.test
-  - subworkflows/local/impute5_subworkflow/main.nf
