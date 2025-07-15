@@ -16,7 +16,7 @@ process IMPUTE5_IMPUTE {
           val(region)
 
     output:
-    tuple val(meta), path("*_imputed.bcf"), emit: bcf
+    tuple val(meta), path("*_imputed.bcf"), emit: vcf
     tuple val(meta), path("*_imputed.log"), emit: log
     path 'versions.yml',                    emit: versions
 

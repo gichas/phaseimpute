@@ -16,69 +16,70 @@ nextflow_workflow {
     tag "impute5/convertref"
     tag "impute5/impute"
 
-    // test("Impute with IMPUTE5 - chr22") {
-    //     tag "impute5"
-    //     when {
-    //         workflow {
-    //             """
-    //             // Target data - fichier à imputer
-    //             input[0] = Channel.of([
-    //                 [id: "NA12878", panel: "1000GP", chr: "22"],
-    //                 file(params.pipelines_testdata_base_path + "hum_data/individuals/NA12878/NA12878.s.bcf", checkIfExists: true),
-    //                 file(params.pipelines_testdata_base_path + "hum_data/individuals/NA12878/NA12878.s.bcf.csi", checkIfExists: true),
-    //                 "chr22:16500000-16700000"
-    //             ])
+    test("Impute one vcf") {
+        tag "one_vcf"
+        when {
+            workflow {
+                """
+                // Target data - fichier à imputer
+                input[0] = Channel.of([
+                    [id: "NA12878", panel: "1000GP", chr: "22"],
+                    file(params.pipelines_testdata_base_path + "hum_data/individuals/NA12878/NA12878.s.bcf", checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + "hum_data/individuals/NA12878/NA12878.s.bcf.csi", checkIfExists: true),
+                    "chr22:16500000-16700000"
+                ])
 
-    //             // Reference panel data
-    //             input[1] = Channel.of([
-    //                 [id: "1000GP", chr: "22"],
-    //                 file(params.pipelines_testdata_base_path + "hum_data/panel/chr22/1000GP.chr22.s.norel.vcf.gz", checkIfExists: true),
-    //                 file(params.pipelines_testdata_base_path + "hum_data/panel/chr22/1000GP.chr22.s.norel.vcf.gz.csi", checkIfExists: true),
-    //                 "chr22:16500000-16700000"
-    //             ])
+                // Reference panel data
+                input[1] = Channel.of([
+                    [id: "1000GP", chr: "22"],
+                    file(params.pipelines_testdata_base_path + "hum_data/panel/chr22/1000GP.chr22.s.norel.vcf.gz", checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + "hum_data/panel/chr22/1000GP.chr22.s.norel.vcf.gz.csi", checkIfExists: true),
+                    "chr22:16500000-16700000"
+                ])
 
-    //             // Genetic map data
-    //             input[2] = Channel.of([
-    //                 [id: "1000GP", chr: "22"],
-    //                 file(params.pipelines_testdata_base_path + "hum_data/reference_genome/GRCh38_22.map", checkIfExists: true),
-    //                 "chr22:16500000-16700000"
-    //             ])
-    //             """
-    //         }
-    //     }
+                // Genetic map data
+                input[2] = Channel.of([
+                    [id: "1000GP", chr: "22"],
+                    file(params.pipelines_testdata_base_path + "hum_data/reference_genome/GRCh38_22.map", checkIfExists: true),
+                    "chr22:16500000-16700000"
+                ])
+                """
+            }
+        }
 
-    //     then {
-    //         assertAll(
-    //             { assert workflow.success },
-    //             { assert snapshot(
-    //                 workflow.out.versions,
-    //                 workflow.out.imputed_bcf.collect( entry ->
-    //                     [entry[0], path(entry[1]).getFileName().toString()]
-    //                 ).sort(),
-    //                 workflow.out.imputed_log.collect( entry ->
-    //                     [entry[0], path(entry[1]).getFileName().toString()]
-    //                 ).sort(),
-    //                 workflow.out.chunks.collect( entry ->
-    //                     [entry[0], path(entry[1]).getFileName().toString()]
-    //                 ),
-    //                 workflow.out.xcf_files.collect( entry ->
-    //                     [
-    //                         entry[0],
-    //                         path(entry[1]).getFileName().toString(),  // bcf
-    //                         path(entry[2]).getFileName().toString(),  // csi
-    //                         path(entry[3]).getFileName().toString(),  // bin
-    //                         path(entry[4]).getFileName().toString()   // fam
-    //                     ]
-    //                 )
-    //             ).match() }
-    //         )
-    //     }
-    //
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.versions,
+                    workflow.out.imputed_bcf.collect( entry ->
+                        [entry[0], path(entry[1]).getFileName().toString()]
+                    ).sort(),
+                    workflow.out.imputed_log.collect( entry ->
+                        [entry[0], path(entry[1]).getFileName().toString()]
+                    ).sort(),
+                    workflow.out.chunks.collect( entry ->
+                        [entry[0], path(entry[1]).getFileName().toString()]
+                    ),
+                    workflow.out.xcf_files.collect( entry ->
+                        [
+                            entry[0],
+                            path(entry[1]).getFileName().toString(), 
+                            path(entry[2]).getFileName().toString(),  
+                            path(entry[3]).getFileName().toString(),  
+                            path(entry[4]).getFileName().toString()   
+                        ]
+                    )
+                ).match() }
+            )
+        }
+
+    }
+    
 
     test("Impute with IMPUTE5 - stub") {
 
         tag "stub"
-        options '-stub'
 
         when {
             workflow {
@@ -114,41 +115,46 @@ nextflow_workflow {
         }
     }
 
-
-
 test("Impute with IMPUTE5 - backup data") {
+    tag "backup"
+    
     when {
         workflow {
             """
+            // input[0] = ch_input: Channel.fromList pour multiple samples si besoin
             input[0] = Channel.of([
                 [id: "test_backup", chr: "20"],
                 file("/home/gichas/impute5_backup_complet/modules_impute5/impute/tests/testdata/target.bcf", checkIfExists: true),
-                file("/home/gichas/impute5_backup_complet/modules_impute5/impute/tests/testdata/target.bcf.csi", checkIfExists: true),
-                "20:1000000-4000000"
+                file("/home/gichas/impute5_backup_complet/modules_impute5/impute/tests/testdata/target.bcf.csi", checkIfExists: true)
             ])
-
+            
+            // input[1] = ch_panel: avec .collect() comme dans l'exemple
             input[1] = Channel.of([
                 [id: "ref_backup", chr: "20"],
                 file("/home/gichas/impute5_backup_complet/modules_impute5/impute/tests/testdata/reference.bcf", checkIfExists: true),
-                file("/home/gichas/impute5_backup_complet/modules_impute5/impute/tests/testdata/reference.bcf.csi", checkIfExists: true),
-                "20:1000000-4000000"
-            ])
-
-            // AJOUT de input[2] manquant :
+                file("/home/gichas/impute5_backup_complet/modules_impute5/impute/tests/testdata/reference.bcf.csi", checkIfExists: true)
+            ]).collect()
+            
+            // input[2] = ch_map: structure simple comme dans l'exemple
             input[2] = Channel.of([
-                [id: "ref_backup", chr: "20"],
-                file("/home/gichas/impute5_backup_complet/modules_impute5/impute/tests/testdata/chr20.b37.gmap.gz", checkIfExists: true),  // Vérifiez si ce fichier existe
-                "20:1000000-4000000"
+                [chr: "20"],
+                file("/home/gichas/impute5_backup_complet/modules_impute5/impute/tests/testdata/chr20.b37.gmap.gz", checkIfExists: true)
             ])
             """
         }
     }
-
+    
     then {
         assertAll(
             { assert workflow.success },
             { assert workflow.out.vcf_tbi.size() >= 1 },
-            { assert workflow.out.vcf_tbi.size() >= 1 }
+            { assert snapshot(
+                workflow.out.versions,
+                workflow.out.vcf_tbi.collect{[
+                    it[0],
+                    path(it[1]).getFileName().toString()
+                ] }
+            ).match() }
         )
     }
 }

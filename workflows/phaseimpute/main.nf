@@ -402,170 +402,45 @@ workflow PHASEIMPUTE {
             ch_input_validate = ch_input_validate.mix(CONCAT_QUILT.out.vcf_tbi)
         }
 
-
-
        if (params.tools.split(',').contains("impute5")) {
-    log.info("Impute with IMPUTE5")
+            log.info("Impute with IMPUTE5")
 
-    // 1. Nettoyer et préparer l'input
-    ch_input_clean = ch_input_type.vcf
-        .map { meta, vcf, index ->
-            def clean_meta = [id: meta.id]
-            [clean_meta, vcf, index]
-        }
-        .view { "Clean input: ${it[0].id}, VCF: ${it[1]}, Index: ${it[2]}" }
-
-    // 2. Extraire les chromosomes
-    VCFCHREXTRACT_IMPUTE5(ch_input_clean)
-    ch_versions = ch_versions.mix(VCFCHREXTRACT_IMPUTE5.out.versions)
-
-    // 3. Préparer pour le split
-    ch_input_to_split = VCFCHREXTRACT_IMPUTE5.out.chr
-        .join(ch_input_clean, by: 0)
-        .map { meta, chr_file, vcf, tbi ->
-            def chromosomes = chr_file.readLines().findAll { it.trim() }
-            log.info "Sample ${meta.id}: Found chromosomes: ${chromosomes.join(', ')}"
-            [meta, vcf, tbi, chromosomes]
-        }
-
-    // 4. Split par chromosome
-    VCF_SPLIT_BYCHROMOSOME_IMPUTE5(ch_input_to_split)
-    ch_versions = ch_versions.mix(VCF_SPLIT_BYCHROMOSOME_IMPUTE5.out.versions)
-
-    // 5. Préparer l'input pour IMPUTE5 avec gestion robuste du chr
-    ch_input_impute5 = VCF_SPLIT_BYCHROMOSOME_IMPUTE5.out.vcf_per_chr
-        .flatMap { meta, vcf_files, csi_files ->
-            if (!vcf_files || !csi_files) {
-                log.error "No VCF/CSI files for ${meta.id}"
-                return []
-            }
-            
-            def results = []
-            [vcf_files, csi_files].transpose().each { vcf, csi ->
-                // Extraction robuste du chromosome
-                def chr = null
-                
-                // Méthode 1: depuis le nom du fichier
-                def matcher = vcf.name =~ /_(chr\w+)\.vcf\.gz/
-                if (matcher) {
-                    chr = matcher[0][1]
+            // Prepare VCF input channel with clean metadata
+            ch_vcf_clean = ch_input_type.vcf
+                .map { meta, vcf, index -> 
+                    [[id: meta.id], vcf, index]
                 }
-                
-                // Méthode 2: depuis le nom du fichier sans underscore
-                if (!chr) {
-                    matcher = vcf.name =~ /(chr\w+)\.vcf\.gz/
-                    if (matcher) {
-                        chr = matcher[0][1]
+
+            // Extract chromosome information from VCF
+            VCFCHREXTRACT_IMPUTE5(ch_vcf_clean.map { meta, vcf, index -> [meta, vcf] })
+
+            // Create per-chromosome channels for MINIMAC4
+            ch_impute5_input = VCFCHREXTRACT_IMPUTE5.out.chr
+                .join(ch_vcf_clean, by: 0)
+                .map { meta, chr_file, vcf, index ->
+                    chr_file.readLines().collect { chr ->
+                        [[id: meta.id, chr: chr], vcf, index]
                     }
                 }
-                
-                // Méthode 3: extraction plus flexible
-                if (!chr) {
-                    matcher = vcf.name =~ /chr(\w+)/
-                    if (matcher) {
-                        chr = "chr${matcher[0][1]}"
-                    }
-                }
-                
-                if (!chr) {
-                    log.error "Could not extract chromosome from ${vcf.name}"
-                    return
-                }
-                
-                def meta_chr = meta + [chr: chr]
-                def region = "${chr}:1-50000000"  // Région par défaut pour les tests
-                
-                log.info "Prepared IMPUTE5 input: id=${meta_chr.id}, chr=${chr}, vcf=${vcf.name}"
-                results.add([meta_chr, vcf, csi, region])
-            }
-            return results
+                .flatten()
+                .collate(3)
+
+            // Run imputation with MINIMAC4
+            VCF_IMPUTE_IMPUTE5(
+                ch_impute5_input,
+                ch_panel_phased,  
+                ch_map            
+            )
+            ch_versions = ch_versions.mix(VCF_IMPUTE_IMPUTE5.out.versions)
+
+            // Concatenate by chromosomes
+            CONCAT_IMPUTE5(VCF_IMPUTE_IMPUTE5.out.vcf_tbi)
+            ch_versions = ch_versions.mix(CONCAT_IMPUTE5.out.versions)
+
+            // Add results to input validate
+            ch_input_validate = ch_input_validate.mix(CONCAT_IMPUTE5.out.vcf_tbi)
+
         }
-        .view { meta, vcf, csi, region -> 
-            "IMPUTE5 input: [id: ${meta.id}, chr: ${meta.chr}], VCF: ${vcf.name}, Region: ${region}" 
-        }
-
-    // 6. Préparer les références avec le même format de chr
-    ch_panel_with_region = ch_panel_phased
-        .map { meta, vcf, index ->
-            // S'assurer que chr est dans le bon format
-            def chr = meta.chr
-            if (!chr) {
-                log.error "No chr in panel meta for ${meta}"
-                chr = "chr22"  // Valeur par défaut pour les tests
-            }
-            def region = "${chr}:1-50000000"
-            def updated_meta = meta + [chr: chr]
-            log.info "Panel: chr=${chr}, region=${region}"
-            [updated_meta, vcf, index, region]
-        }
-
-    ch_map_with_region = ch_map
-        .map { meta, map_file ->
-            def chr = meta.chr
-            if (!chr) {
-                log.error "No chr in map meta for ${meta}"
-                chr = "chr22"
-            }
-            def region = "${chr}:1-50000000"
-            def updated_meta = meta + [chr: chr]
-            log.info "Map: chr=${chr}, region=${region}"
-            [updated_meta, map_file, region]
-        }
-
-    // 7. Lancer l'imputation
-    VCF_IMPUTE_IMPUTE5(
-        ch_input_impute5,
-        ch_panel_with_region,
-        ch_map_with_region
-    )
-    ch_versions = ch_versions.mix(VCF_IMPUTE_IMPUTE5.out.versions)
-
-    // 8. Vérifier les outputs
-VCF_IMPUTE_IMPUTE5.out.vcf_tbi
-    .view { meta, vcf, tbi -> 
-        "IMPUTE5 output: [id: ${meta.id}, chr: ${meta.chr}], VCF: ${vcf.name}" 
-    }
-
-// 9. ✅ AJOUTEZ: Concat des fichiers par échantillon
-ch_impute5_final = VCF_IMPUTE_IMPUTE5.out.vcf_tbi
-    .map { meta, vcf, tbi ->
-        // Grouper par échantillon (id) en retirant chr et chunk_id
-        def group_key = [id: meta.id, tools: "impute5"]
-        [group_key, vcf, tbi]
-    }
-    .groupTuple()
-    .map { group_meta, vcf_list, tbi_list ->
-        // Créer meta pour le fichier final concaténé
-        def final_meta = group_meta + [
-            ext: [prefix: "${group_meta.id}_imputed_all_chr"]
-        ]
-        [final_meta, vcf_list.sort(), tbi_list.sort()]
-    }
-    .view { meta, vcf_list, tbi_list ->
-        "Final concat input: [id: ${meta.id}], ${vcf_list.size()} files: ${vcf_list*.name.join(', ')}"
-    }
-
-// 10. Concaténer tous les chromosomes par échantillon
-CONCAT_IMPUTE5(ch_impute5_final)
-ch_versions = ch_versions.mix(CONCAT_IMPUTE5.out.versions)
-
-    // 11. Résultat final
-    CONCAT_IMPUTE5.out.vcf_tbi
-        .view { meta, vcf, csi ->
-            "Final IMPUTE5 result: [id: ${meta.id}], VCF: ${vcf.name}"
-        }
-
-    // Add results to input validate
-    ch_input_validate = ch_input_validate.mix(CONCAT_IMPUTE5.out.vcf_tbi)
-}
-
-
-
-
-
-
-
-
 
         // Prepare renaming file
         BCFTOOLS_QUERY_IMPUTED(ch_input_validate, [], [], [])
